@@ -57,7 +57,7 @@ class UsersApiRouter @Inject()(usersDao: UsersDAO, userJsonProtocol: UserJsonPro
 
       get {
         pathPrefix("users" / IntNumber / IntNumber) {
-          (limit, offset) => complete(usersDao.getUsersWithLimitAndOffset((offset, limit)))
+          (limit, offset) => complete(usersDao.getUsersWithLimitAndOffset(offset, limit))
         }
       },
       get {

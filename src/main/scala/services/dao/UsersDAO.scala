@@ -12,18 +12,17 @@ class UsersDAO @Inject() (@Named("db") db: Database) extends TableQuery(new User
   val defaultUsersQuantityToShow = 20
 
   def findByIdFull(id: Long): Future[Option[(User, Seq[String])]] = {
-    val user = for {
-      u <- Tables.users if u.id === id
-      ug <- Tables.userGroup if ug.userId === u.id
-      g <- Tables.groups if ug.groupId === g.id
+    val users = for {
+      ((u, _), g)  <- Tables.users joinLeft Tables.userGroup on (_.id === _.userId) joinLeft Tables.groups on(_._2.map(_.groupId) === _.id)
+      if u.id === id
     } yield (u, g)
 
-    // How I understood slick has no way to bind models like m:m (like @Many_To_Many annotation from hibernate)  directly.
-    // So we have to linked their manually using something like pivot table, haven't we?
-
-    db.run(user.result).map(t => Some(t.foldLeft(t.head._1, Seq[String]())((pref, next) => {
-      (pref._1, pref._2 :+ next._2.name)
-    })))
+    db.run(users.result).map({
+      case t if t.nonEmpty => Some(t.foldLeft(t.head._1, Seq[String]())((pref, next) => {
+        (pref._1, pref._2 :+ next._2.map(_.name).getOrElse(""))
+      }))
+      case _ => None
+    })
   }
 
   def findById(id: Long): Future[Option[User]] = {
@@ -45,7 +44,9 @@ class UsersDAO @Inject() (@Named("db") db: Database) extends TableQuery(new User
     db.run(this.take(if (quantity > 100 || quantity < 0) 100 else quantity).result)
   }
 
-  def getUsersWithLimitAndOffset(requirements: (Int, Int)): Future[Seq[User]] = {
-    db.run(this.drop(requirements._1).take(requirements._2).result)
+  def getUsersWithLimitAndOffset(offset: Int, limit: Int): Future[Seq[User]] = {
+    db
+      .run(this.drop(offset)
+      .take(if (limit > 100 || limit < 0) 100 else limit).result)
   }
 }
