@@ -29,8 +29,11 @@ class Groups(tag: Tag) extends Table[Group](tag, "groups") {
 class Users(tag: Tag) extends Table[User](tag, "users") {
   def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
   def name = column[String]("name")
+  def surname = column[String]("surname")
+  def email = column[String]("email")
   def dateOfBirth = column[Date]("date_birth")
-  def dateOfCreation = column[Timestamp]("date_creation")
+  def creationDate = column[Timestamp]("date_creation")
+  def lustUpdateDate = column[Timestamp]("last_update_date")
   def isActive = column[Boolean]("is_active")
-  def * = (id.?, name, dateOfBirth, dateOfCreation, isActive) <> (User.tupled, User.unapply)
+  def * = (id.?, name, surname, email, dateOfBirth, lustUpdateDate, creationDate, isActive) <> (User.tupled, User.unapply)
 }
