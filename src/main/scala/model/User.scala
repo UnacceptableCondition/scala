@@ -6,5 +6,6 @@ final case class User(
                        id: Option[Long],
                        name: String,
                        dateOfBirth: Date,
-                       dateOfCreation: Timestamp
+                       dateOfCreation: Timestamp,
+                       isActive: Boolean
                      )

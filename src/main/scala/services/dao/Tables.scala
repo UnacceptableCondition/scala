@@ -31,5 +31,6 @@ class Users(tag: Tag) extends Table[User](tag, "users") {
   def name = column[String]("name")
   def dateOfBirth = column[Date]("date_birth")
   def dateOfCreation = column[Timestamp]("date_creation")
-  def * = (id.?, name, dateOfBirth, dateOfCreation) <> (User.tupled, User.unapply)
+  def isActive = column[Boolean]("is_active")
+  def * = (id.?, name, dateOfBirth, dateOfCreation, isActive) <> (User.tupled, User.unapply)
 }

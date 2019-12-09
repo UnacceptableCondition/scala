@@ -7,13 +7,14 @@ import akka.http.scaladsl.server.Route
 import javax.inject.Inject
 import model.User
 import services.dao.UsersDAO
+import util.marshalling.UserJsonProtocol
 
 import scala.concurrent.Future
 
-class UsersApiRouter @Inject()(usersDao: UsersDAO) {
+class UsersApiRouter @Inject()(usersDao: UsersDAO, userJsonProtocol: UserJsonProtocol) {
 
   def getUsersApiRoutes: Route = route
-  import util.marshalling.UserJsonProtocol._
+  import userJsonProtocol._
 
   private val route: Route =
     concat(
