@@ -1,9 +1,14 @@
-name := "ScalaWebService"
+name := "ScalaTutorial"
 
 version := "0.1"
 
+scalaVersion := "2.12.1"
 libraryDependencies ++= Seq(
   "net.codingwell" %% "scala-guice" % "4.2.6",
+  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
+  "org.json4s" %% "json4s-jackson" % "3.7.0-M1",
+
 
   "com.typesafe.slick" % "slick_2.12" % "3.3.2",
   "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
@@ -18,13 +23,3 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.4.0",
 )
 addSbtPlugin("io.github.davidmweber" % "flyway-sbt" % "6.0.7")
-//
-//resolvers += Resolver.url("org.flywaydb",
-//  new URL("https://repo1.maven.org/maven2/org/flywaydb/flyway-sbt/4.2.0/flyway-sbt-4.2.0.pom"))(
-//  Resolver.defaultIvyPatterns)
-//
-//resolvers += "org.flywaydb" at "https://repo1.maven.org/maven2/org/flywaydb/flyway-sbt/4.2.0/flyway-sbt-4.2.0.pom"
-
-
-//resolvers += "Flyway" at "https://flywaydb.org/repo"
-scalaVersion := "2.12.1"
