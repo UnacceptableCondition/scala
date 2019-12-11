@@ -1,21 +1,24 @@
-package modules
+package by.itechart.tutorial.web.controller
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
+import by.itechart.tutorial.config.Settings
+import by.itechart.tutorial.web.{GroupsApiRouter, UsersApiRouter}
 import com.google.inject.Inject
-import services.web.{GroupsApiRouter, UsersApiRouter}
+import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.io.StdIn
 
-class Server @Inject() (usersRouter: UsersApiRouter, groupsRouter: GroupsApiRouter) {
+class Server @Inject()(usersRouter: UsersApiRouter, groupsRouter: GroupsApiRouter, settings: Settings) {
+
+  val logger: Logger = Logger(classOf[Server])
 
   implicit val system: ActorSystem = ActorSystem("my-system")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
-  // needed for the future flatMap/onComplete in the end
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
   val route: Route =
@@ -24,10 +27,11 @@ class Server @Inject() (usersRouter: UsersApiRouter, groupsRouter: GroupsApiRout
       groupsRouter.getGroupsApiRoutes
     )
 
-  val bindingFuture: Future[Http.ServerBinding] = Http().bindAndHandle(route, "localhost", 8080)
+  val bindingFuture: Future[Http.ServerBinding] =
+    Http().bindAndHandle(route, settings.serverHost, settings.serverPort)
 
   def run(): Unit = {
-    println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+    logger.info(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
     StdIn.readLine() // let it run until user presses return
     bindingFuture
       .flatMap(_.unbind()) // trigger unbinding from the port

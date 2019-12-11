@@ -1,4 +1,4 @@
-package config
+package by.itechart.tutorial.config
 
 import com.google.inject.{AbstractModule, Provides}
 import com.google.inject.name.Named

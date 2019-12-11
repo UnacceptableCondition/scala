@@ -1,11 +1,14 @@
+package by.itechart.tutorial
+
+import by.itechart.tutorial.config.ApplicationConfig
+import by.itechart.tutorial.web.controller.Server
 import com.google.inject.{Guice, Inject, Injector}
-import config.ApplicationConfig
-import modules.Server
 
-object Application{
+object Application {
 
+  val applicationConfig: ApplicationConfig = new ApplicationConfig
   val injector: Injector = Guice.createInjector(
-      new ApplicationConfig
+    applicationConfig
   )
 
   @Inject

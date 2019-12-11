@@ -1,7 +1,7 @@
-package util.marshalling
+package by.itechart.tutorial.util.marshalling
 
-import model.Group
-import spray.json.{DefaultJsonProtocol, JsArray, JsString, JsValue, RootJsonFormat}
+import by.itechart.tutorial.dao.Group
+import spray.json.{DefaultJsonProtocol, JsArray, JsNumber, JsString, JsValue, RootJsonFormat}
 
 object GroupJsonProtocol extends DefaultJsonProtocol {
 
