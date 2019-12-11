@@ -1,91 +1,99 @@
 package by.itechart.tutorial.web
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Directives.{as, complete, concat, entity, get, onComplete, onSuccess, path, pathPrefix, post, _}
+import akka.http.scaladsl.server.Directives.{complete, concat, get, onComplete, onSuccess, path, pathPrefix, post, _}
 import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import by.itechart.tutorial.dao.User
 import by.itechart.tutorial.service.UserService
-import by.itechart.tutorial.util.const.Constants.MODEL_NOT_FOUND
-import by.itechart.tutorial.util.marshalling.UserJsonProtocol
+import by.itechart.tutorial.util.UtilFunctions.StringToDate
+import by.itechart.tutorial.util.const.Constants._
 import javax.inject.Inject
+import org.json4s.native.Serialization.{read, write}
+import org.json4s.{DefaultFormats, Formats}
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.util.Success
 
-class UsersApiRouter @Inject()(userJsonProtocol: UserJsonProtocol, userService: UserService) {
+class UsersApiRouter @Inject()(userService: UserService) {
+  implicit val formats: Formats = DefaultFormats + StringToDate
+
+  import by.itechart.tutorial.Application._
 
   def getUsersApiRoutes: Route = route
 
-  import userJsonProtocol._
-
   private val route: Route =
     concat(
-      // 5)	Просмотреть детали о конкретном пользователе (за исключением 1:M связей ресурса) . Step 1
       get {
         pathPrefix("users" / LongNumber) { id =>
           val maybeItem: Future[Option[User]] = userService.getUserById(id)
           onSuccess(maybeItem) {
-            case Some(user) => complete(user)
-            case None => complete(MODEL_NOT_FOUND.format("user"))
+            case Some(user) => complete(write(user))
+            case None => complete(write(USER_NOT_FOUND))
           }
         }
       },
-      // 8)	Удалить пользователя. Step 1
       delete {
         pathPrefix("users" / LongNumber) { id =>
           val deleted = userService.deleteUserById(id)
-          onComplete(deleted) { _ => complete(deleted) }
+          onComplete(deleted) {
+            case Success(user) => complete(write(user))
+            case _ => complete(write(DELETE_USER_EXCEPTION_MESSAGE))
+          }
         }
       },
-      // 4)	Создать пользователя. Пользователь создается активным или не активным в зависимости от конфигурации приложения. Step 1
       post {
         path("users") {
-          entity(as[User]) { user =>
-            val saved: Future[User] = userService.createUser(user)
-            onComplete(saved) { user =>
-              complete(user)
+          extractStrictEntity(3.seconds) { entity =>
+            val marshaling = Unmarshal(entity).to[String].map(v => {
+              userService.saveUser(read[User](v))
+            })
+            onComplete(marshaling) {
+              case Success(saved) => onComplete(saved) {
+                case Success(user) => complete(write(user))
+              }
+              case _ => complete(write(POST_USER_EXCEPTION_MESSAGE))
             }
           }
         }
       },
-      // 7)	Обновить представление  пользователя целиком. Step 1
       put {
         path("users" / LongNumber) { id =>
-          entity(as[User]) { user =>
-            val updated: Future[Option[User]] = userService.updateUserById(id, user)
-            onComplete(updated) { _ =>
-              complete(updated)
+          extractStrictEntity(3.seconds) { entity =>
+            val marshaling = Unmarshal(entity).to[String].map(v => {
+              userService.updateUserById(id, read[User](v))
+            })
+            onComplete(marshaling) {
+              case Success(updated) => onComplete(updated) {
+                case Success(user) => complete(write(user))
+              }
+              case _ => complete(write(PUT_USER_EXCEPTION_MESSAGE))
             }
           }
         }
       },
-      // 6)	Просмотреть полное представление конкретного пользователя (включая 1:M связи) . Step 1
       get {
         pathPrefix("full" / "users" / LongNumber) { id =>
           val maybeItem = userService.getFullUserInfoById(id)
           onSuccess(maybeItem) {
-            case Some(user) => complete(user)
-            case None => complete(StatusCodes.NotFound)
+            case Some(user) => complete(write(user))
+            case None => complete(write(USER_NOT_FOUND))
           }
         }
       },
-
-      // 2)	Просмотреть указанную страницу пользователей. Максимальный размер страницы – 100. Step 1
       get {
         pathPrefix("users" / "pages" / IntNumber / IntNumber) {
-          (offset, limit) => complete(userService.getUsersWitOffsetAndLimit(offset, limit))
+          (offset, limit) => complete(write(userService.getUsersWitOffsetAndLimit(offset, limit)))
         }
       },
-      // 1)	Просмотреть всех пользователей. По умолчанию возвращает первую страницу результатов с 20 элементами. Step 1
       get {
         pathPrefix("users" / "pages") {
-          complete(userService.getUsersFirstPage)
+          complete(write(userService.getUsersFirstPage))
         }
       },
-      // 3)	Просмотреть всех пользователей без пагинации. Step 1
       get {
         pathPrefix("users" / "pages" / "all") {
-          complete(userService.getAllUsers)
+          complete(write(userService.getAllUsers))
         }
       }
     )

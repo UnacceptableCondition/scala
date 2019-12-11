@@ -16,6 +16,9 @@ class GroupRepository @Inject()(@Named("db") db: Database) extends Repository[Gr
   override def copyWithId(model: Group, id: Id): Group = model.copy(id = Some(id))
 }
 
-final case class Group(id: Option[Long], name: String)
+final case class Group(
+                        id: Option[Long] = Option.empty,
+                        name: String
+                      )
 
 
