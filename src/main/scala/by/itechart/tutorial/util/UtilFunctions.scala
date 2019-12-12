@@ -5,12 +5,12 @@ import java.text.SimpleDateFormat
 
 import org.json4s.{CustomSerializer, DefaultFormats}
 import org.json4s.JsonAST.JString
-import by.itechart.tutorial.util.const.Constants.DATE_FORMAT
+import by.itechart.tutorial.util.const.Constants.DateFormat
 
 object UtilFunctions {
   implicit val formats: DefaultFormats.type = DefaultFormats
 
-  val dateFormat = new SimpleDateFormat(DATE_FORMAT)
+  val dateFormat = new SimpleDateFormat(DateFormat)
 
   def currentTime: java.sql.Timestamp = new Timestamp(new java.util.Date().getTime)
 

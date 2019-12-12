@@ -4,7 +4,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import by.itechart.tutorial.config.Settings
-import by.itechart.tutorial.web.{GroupsApiRouter, UsersApiRouter}
+import by.itechart.tutorial.web.router.{GroupsApiRouter, UsersApiRouter}
 import com.google.inject.Inject
 import com.typesafe.scalalogging.Logger
 
