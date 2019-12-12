@@ -9,7 +9,7 @@ class UserService @Inject()(userRepository: UserRepository) {
 
   def getUserById(id: Long): Future[Option[User]] = userRepository.findById(id)
 
-  def createUser(user: User): Future[User] = userRepository.insert(user)
+  def saveUser(user: User): Future[User] = userRepository.insert(user)
 
   def deleteUserById(id: Long): Future[Option[User]] = userRepository.deleteById(id)
 

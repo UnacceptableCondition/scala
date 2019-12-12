@@ -9,7 +9,7 @@ class GroupService @Inject()(groupRepository: GroupRepository) {
 
   def getGroupById(id: Long): Future[Option[Group]] = groupRepository.findById(id)
 
-  def createGroup(group: Group): Future[Group] = groupRepository.insert(group)
+  def saveGroup(group: Group): Future[Group] = groupRepository.insert(group)
 
   def deleteGroupById(id: Long): Future[Option[Group]] = groupRepository.deleteById(id)
 

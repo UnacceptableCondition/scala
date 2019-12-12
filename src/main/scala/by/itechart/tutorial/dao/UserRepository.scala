@@ -2,9 +2,11 @@ package by.itechart.tutorial.dao
 
 import java.sql.{Date, Timestamp}
 
+import by.itechart.tutorial.config.Settings
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import slick.jdbc.{JdbcProfile, PostgresProfile}
+import by.itechart.tutorial.util.UtilFunctions.currentTime
 import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -34,13 +36,14 @@ class UserRepository @Inject()(@Named("db") db: Database) extends Repository[Use
   }
 }
 
-final case class User(
-                       id: Option[Long],
-                       name: String,
-                       surname: String,
-                       email: String,
-                       dateOfBirth: Date,
-                       creationDate: Timestamp,
-                       lastUpdateTime: Timestamp,
-                       isActive: Boolean
-                     )
+
+case class User(
+                 id: Option[Long] = Option.empty,
+                 name: String,
+                 surname: String,
+                 email: String,
+                 dateOfBirth: Date,
+                 creationDate: Timestamp = currentTime,
+                 lastUpdateTime: Timestamp = currentTime,
+                 isActive: Boolean = Settings.defaultUserIsActive
+               )
