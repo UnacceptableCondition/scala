@@ -9,15 +9,15 @@ class UserService @Inject()(userRepository: UserRepository) {
 
   def getUserById(id: Long): Future[Option[User]] = userRepository.findById(id)
 
-  def saveUser(user: User): Future[User] = userRepository.insert(user)
+  def saveUser(user: User): Future[Option[User]] = userRepository.insert(user)
 
   def deleteUserById(id: Long): Future[Option[User]] = userRepository.deleteById(id)
 
-  def updateUserById(id: Long, user: User): Future[Option[User]] = userRepository.update(id, user)
+  def updateUserById(id: Long)(user: User): Future[Option[User]] = userRepository.update(id, user)
 
   def getAllUsers: Future[Seq[User]] = userRepository.findAll()
 
-  def getUsersWitOffsetAndLimit(offset: Int, limit: Int): Future[Seq[User]] = userRepository.findWithOffsetAndLimit(offset, limit)
+  def getUsersWitOffsetAndLimit(offset: Int)(limit: Int)(): Future[Seq[User]] = userRepository.findWithOffsetAndLimit(offset, limit)
 
   def getFullUserInfoById(id: Long): Future[Option[(User, Seq[String])]] = userRepository.findByIdFull(id)
 

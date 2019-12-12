@@ -32,14 +32,14 @@ abstract class Repository[T <: AbstractTable[_], I: BaseTypedType](val db: Datab
 
   def findFirstPage(): Future[Seq[T#TableElementType]] = db.run(table.take(defaultPageSize).result)
 
-  def insert(model: T#TableElementType): Future[T#TableElementType] = {
-    db.run(table returning table.map(getId) into ((m, id) => copyWithId(m, id)) += model)
+  def insert(model: T#TableElementType): Future[Option[T#TableElementType]] = {
+    db.run(table returning table.map(getId) into ((m, id) => Some(copyWithId(m, id))) += model)
   }
 
   def update(id: Id, model: T#TableElementType): Future[Option[T#TableElementType]] = {
     db run filterById(id).update(copyWithId(model, id)) map {
       case 0 => None
-      case _ => Some(model)
+      case _ => Some(copyWithId(model, id))
     }
   }
 
