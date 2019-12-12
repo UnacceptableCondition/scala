@@ -20,5 +20,5 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http"   % "10.1.11",
 
   "com.typesafe" % "config" % "1.4.0",
+  "org.flywaydb" % "flyway-core" % "6.1.1"
 )
-addSbtPlugin("io.github.davidmweber" % "flyway-sbt" % "6.0.7")
