@@ -5,6 +5,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import by.itechart.tutorial.config.Settings
 import by.itechart.tutorial.web.router.{GroupsApiRouter, UsersApiRouter}
+import by.itechart.tutorial.web.swagger.SwaggerConfig
 import com.google.inject.Inject
 import com.typesafe.scalalogging.Logger
 
@@ -17,11 +18,8 @@ class Server @Inject()(usersRouter: UsersApiRouter, groupsRouter: GroupsApiRoute
 
   val logger: Logger = Logger(classOf[Server])
 
-  val route: Route =
-    concat(
-      usersRouter.getUsersApiRoutes,
-      groupsRouter.getGroupsApiRoutes
-    )
+  val route: Route = usersRouter.getUsersApiRoutes ~ groupsRouter.getGroupsApiRoutes ~
+    SwaggerConfig.routes ~ getFromResourceDirectory("swagger")
 
   val bindingFuture: Future[Http.ServerBinding] =
     Http().bindAndHandle(route, Settings.serverHost, Settings.serverPort)

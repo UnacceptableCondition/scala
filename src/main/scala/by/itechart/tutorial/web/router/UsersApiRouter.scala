@@ -6,6 +6,7 @@ import akka.http.scaladsl.server.Route
 import by.itechart.tutorial.dao.User
 import by.itechart.tutorial.service.UserService
 import by.itechart.tutorial.util.const.Constants._
+import by.itechart.tutorial.web.swagger.SwaggerUserApiDoc
 import javax.inject.Inject
 import org.json4s.native.Serialization.write
 
@@ -13,7 +14,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.Success
 
-class UsersApiRouter @Inject()(userService: UserService) extends BaseRouter[User] {
+class UsersApiRouter @Inject()(userService: UserService) extends BaseRouter[User] with SwaggerUserApiDoc {
 
   override val apiBase: String = "users"
 
@@ -26,39 +27,36 @@ class UsersApiRouter @Inject()(userService: UserService) extends BaseRouter[User
   private val route: Route =
     concat(
       get {
-        parameters("mode" ! "full") {
+        parameters("mode".?) { mode =>
           pathBaseAndNumber() { id =>
-            onSuccess(userService.getFullUserInfoById(id)) {
-              case Some(user) => complete(user)
-              case None => complete(UserNotFoundExceptionMessage)
+            mode match {
+              case Some(v) if v == "full" =>
+                onSuccess(userService.getFullUserInfoById(id)) {
+                  case Some(user) => complete(user)
+                  case None => complete(UserNotFoundExceptionMessage)
+                }
+              case None => gettingHandler(userService.getUserById(id), UserNotFoundExceptionMessage)
+              case _ => complete(InvalidParamsExceptionMessage)
             }
           }
         }
       },
       get {
-        parameters("offset".as[Int], "limit".as[Int]) { (offset, limit) =>
+        parameters("offset".as[Int].?, "limit".as[Int].?, "pages".?) { (offset, limit, pages) =>
           pathBase() {
-            completeQuery(userService.getUsersWitOffsetAndLimit(offset)(limit))
+            if (pages.isDefined && (offset.isDefined || limit.isDefined)) {
+              complete("message" -> "Ambiguous request. Don't use \"pages\" query with \"offset\" or \"limit\"")
+            } else {
+              pages match {
+                case Some(v) if v == "first" => completeQuery(userService.getUsersFirstPage)
+                case Some(v) if v == "all" => completeQuery(userService.getAllUsers)
+                case None => completeQuery(
+                  userService.getUsersWitOffsetAndLimit(offset.getOrElse(0))(limit.getOrElse(0))
+                )
+                case _ => complete(InvalidParamsExceptionMessage)
+              }
+            }
           }
-        }
-      },
-      get {
-        parameters("pages" ! "first") {
-          pathBase() {
-            completeQuery(userService.getUsersFirstPage)
-          }
-        }
-      },
-      get {
-        parameters("pages" ! "all") {
-          pathBase() {
-            completeQuery(userService.getAllUsers)
-          }
-        }
-      },
-      get {
-        pathBaseAndNumber() { id =>
-          gettingHandler(userService.getUserById(id), UserNotFoundExceptionMessage)
         }
       },
       delete {
