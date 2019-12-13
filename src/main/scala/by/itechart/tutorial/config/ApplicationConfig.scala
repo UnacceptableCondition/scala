@@ -7,7 +7,7 @@ import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api.Database
 
 
-class ApplicationConfig extends AbstractModule with ScalaModule {
+class ApplicationConfig extends AbstractModule with ScalaModule with MigrationConfig {
 
   @Provides
   @Named("db")
