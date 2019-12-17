@@ -1,9 +1,9 @@
-CREATE TABLE IF NOT EXISTS groups(
+create TABLE IF NOT EXISTS groups(
 	   id SERIAL PRIMARY KEY,
 	   name VARCHAR (30) UNIQUE NOT NULL
    );
 
-CREATE TABLE IF NOT EXISTS users(
+create TABLE IF NOT EXISTS users(
 	   id SERIAL PRIMARY KEY,
 	   name varchar (30) NOT NULL,
 	   surname varchar (30) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users(
 	   is_active BOOLEAN NOT NULL
    );
 
-CREATE TABLE IF NOT EXISTS user_group(
+create TABLE IF NOT EXISTS user_group(
 	   id SERIAL PRIMARY KEY,
 	   user_id integer,
 	   group_id integer,
@@ -23,10 +23,20 @@ CREATE TABLE IF NOT EXISTS user_group(
    );
 
 
-   CREATE TABLE IF NOT EXISTS user_user(
+   create TABLE IF NOT EXISTS user_user(
 	   id SERIAL PRIMARY KEY,
 	   left_user_id integer,
 	   right_user_id integer,
 	   FOREIGN KEY (left_user_id) REFERENCES users(id),
 	   FOREIGN KEY (right_user_id) REFERENCES users(id)
    );
+
+	create TABLE user_activity(
+		   id SERIAL PRIMARY KEY,
+		   user_id INTEGER NOT NULL,
+		   is_active BOOLEAN NOT NULL,
+		   last_update_date TIMESTAMP NOT NULL,
+		   FOREIGN KEY (user_id) REFERENCES users(id)
+	   );
+
+insert into groups(name) values('defaultGroup');
