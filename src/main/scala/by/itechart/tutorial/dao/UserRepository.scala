@@ -3,11 +3,13 @@ package by.itechart.tutorial.dao
 import java.sql.{Date, Timestamp}
 
 import by.itechart.tutorial.config.Settings
+import by.itechart.tutorial.util.UtilFunctions.currentTime
 import com.google.inject.Inject
 import com.google.inject.name.Named
-import slick.jdbc.{JdbcProfile, PostgresProfile}
-import by.itechart.tutorial.util.UtilFunctions.currentTime
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode
 import slick.jdbc.PostgresProfile.api._
+import slick.jdbc.{JdbcProfile, PostgresProfile}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -36,14 +38,18 @@ class UserRepository @Inject()(@Named("db") db: Database) extends Repository[Use
   }
 }
 
-
+@Schema(
+  name = "UserModel",
+  description = "Model for user representation",
+  requiredProperties = Array("name", "surname", "email", "dateOfBirth")
+)
 case class User(
-                 id: Option[Long] = Option.empty,
+                 @Schema(accessMode = AccessMode.READ_ONLY) id: Option[Long] = Option.empty,
                  name: String,
                  surname: String,
                  email: String,
                  dateOfBirth: Date,
-                 creationDate: Timestamp = currentTime,
-                 lastUpdateTime: Timestamp = currentTime,
-                 isActive: Boolean = Settings.defaultUserIsActive
+                 @Schema(accessMode = AccessMode.READ_ONLY) creationDate: Timestamp = currentTime,
+                 @Schema(accessMode = AccessMode.READ_ONLY) lastUpdateTime: Timestamp = currentTime,
+                 @Schema(accessMode = AccessMode.READ_ONLY) isActive: Boolean = Settings.defaultUserIsActive
                )

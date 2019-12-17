@@ -6,6 +6,7 @@ object Constants {
   private val ModelNotFoundExceptionPattern = "requested %s wasn't found"
 
   val DefaultExceptionMessage: (String, String) = "message" -> "Ops! something went wrong!"
+  val InvalidParamsExceptionMessage: (String, String) = "message" -> "You sent invalid params. Check it!"
 
   val PostUserExceptionMessage: (String, String) = "message" -> PostAndPutExceptionPattern.format("create", "user")
   val PutUserExceptionMessage: (String, String) = "message" -> PostAndPutExceptionPattern.format("update", "user")

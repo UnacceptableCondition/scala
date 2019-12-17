@@ -1,7 +1,7 @@
 package by.itechart.tutorial.web.router
 
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
-import akka.http.scaladsl.model.HttpEntity
+import akka.http.scaladsl.model.{HttpEntity, StatusCodes}
 import akka.http.scaladsl.server.Directives.{complete, onSuccess, path, pathPrefix, _}
 import akka.http.scaladsl.server.{Directive, Route}
 import akka.http.scaladsl.unmarshalling.Unmarshal
@@ -51,6 +51,10 @@ abstract class BaseRouter[A: Manifest] {
 
   implicit def exceptionMessageConversion(x: (String, String)): ToResponseMarshallable = write(x)
 
+  implicit def exceptionMessageConversionWithCode(x: (StatusCodes.ClientError, (String, String))): ToResponseMarshallable =
+    x._1 -> write(x._2)
+
+
   // endregion
 
   private def completeQueryWithUnmarshal(future: => Future[Result], exceptionMessage: (String, String)): Route = {
@@ -61,7 +65,7 @@ abstract class BaseRouter[A: Manifest] {
           logger.error(exception.getMessage)
           complete(DefaultExceptionMessage)
       }
-      case _ => complete(exceptionMessage)
+      case _ => complete(StatusCodes.BadRequest -> exceptionMessage)
     }
   }
 
@@ -74,7 +78,7 @@ abstract class BaseRouter[A: Manifest] {
   private def completeQuery(result: Result, exceptionMessage: (String, String)): Route = {
     onSuccess(result) {
       case Some(obj) => complete(obj)
-      case None => complete(exceptionMessage)
+      case None => complete(StatusCodes.NotFound -> exceptionMessage)
     }
   }
 

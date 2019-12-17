@@ -5,11 +5,12 @@ import akka.http.scaladsl.server.Route
 import by.itechart.tutorial.dao.Group
 import by.itechart.tutorial.service.GroupService
 import by.itechart.tutorial.util.const.Constants.{DeleteGroupExceptionMessage, GroupNotFoundExceptionMessage, PostGroupExceptionMessage, PutGroupExceptionMessage}
+import by.itechart.tutorial.web.swagger.SwaggerGroupApiDoc
 import javax.inject.Inject
 
 import scala.concurrent.duration._
 
-class GroupsApiRouter @Inject()(groupService: GroupService) extends BaseRouter[Group] {
+class GroupsApiRouter @Inject()(groupService: GroupService) extends BaseRouter[Group] with SwaggerGroupApiDoc {
 
   def getGroupsApiRoutes: Route = route
 
