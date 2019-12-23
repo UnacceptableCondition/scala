@@ -5,8 +5,8 @@ import java.sql.{Date, Timestamp}
 import by.itechart.tutorial.config.Settings
 import by.itechart.tutorial.util.UtilFunctions.currentTime
 import io.swagger.v3.oas.annotations.media.Schema
+import by.itechart.tutorial.dao.JdbcProfilesManager.profile.api._
 import io.swagger.v3.oas.annotations.media.Schema.AccessMode
-import slick.jdbc.PostgresProfile.api._
 
 object Tables {
   lazy val users = TableQuery[Users]

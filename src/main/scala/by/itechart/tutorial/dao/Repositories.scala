@@ -1,15 +1,12 @@
 package by.itechart.tutorial.dao
 
+import by.itechart.tutorial.dao.JdbcProfilesManager.profile.api._
 import by.itechart.tutorial.util.UtilFunctions.currentTime
-import com.google.inject.{Inject, Singleton}
 import com.google.inject.name.Named
-import slick.ast.BaseTypedType
-import slick.dbio.Effect
-import slick.jdbc.PostgresProfile
-import slick.jdbc.PostgresProfile.api._
-import slick.lifted.AbstractTable
+import com.google.inject.{Inject, Singleton}
+import slick.jdbc.JdbcBackend.Database
+import slick.jdbc.JdbcProfile
 import slick.sql.FixedSqlAction
-
 
 @Singleton
 class RepositoriesManager @Inject()(
@@ -21,14 +18,12 @@ class RepositoriesManager @Inject()(
                                    ) {
 }
 
+class UserToGroupRepository @Inject()(
+                                       @Named("db") val db: Database,
+                                       @Named("profile") val profile: JdbcProfile
+                                     ) extends BaseRepository[UserToGroupTable, Long] {
 
-abstract class PostgresRepository[T <: AbstractTable[_], I: BaseTypedType](db: Database) extends BaseRepository[T, I](db) {
-  val profile = PostgresProfile
-}
-
-class UserToGroupRepository @Inject()(@Named("db") db: Database) extends PostgresRepository[UserToGroupTable, Long](db) {
-
-  def table = TableQuery[UserToGroupTable]
+  def table: profile.api.TableQuery[UserToGroupTable] = TableQuery[UserToGroupTable]
 
   def getId(t: UserToGroupTable): profile.api.Rep[Id] = t.id
 
@@ -39,12 +34,14 @@ class UserToGroupRepository @Inject()(@Named("db") db: Database) extends Postgre
   def pathAction(userId: Long, groupId: Long): FixedSqlAction[Int, NoStream, Effect.Write] = {
     table insertOrUpdate (UserToGroupEntity(Option.empty, userId, groupId))
   }
-
 }
 
-class UserToUserRepository @Inject()(@Named("db") db: Database) extends PostgresRepository[UserToUserTable, Long](db) {
+class UserToUserRepository @Inject()(
+                                      @Named("db") val db: Database,
+                                      @Named("profile") val profile: JdbcProfile
+                                    ) extends BaseRepository[UserToUserTable, Long] {
 
-  def table = TableQuery[UserToUserTable]
+  def table: profile.api.TableQuery[UserToUserTable] = TableQuery[UserToUserTable]
 
   def getId(t: UserToUserTable): profile.api.Rep[Id] = t.id
 
@@ -53,8 +50,12 @@ class UserToUserRepository @Inject()(@Named("db") db: Database) extends Postgres
   def filterByUserIdAction(id: Long): Query[UserToUserTable, UserToUserEntity, Seq] = table filter (_.leftUserId === id)
 }
 
-class UserActivityRepository @Inject()(@Named("db") db: Database) extends PostgresRepository[UserActivityTable, Long](db) {
-  def table = TableQuery[UserActivityTable]
+class UserActivityRepository @Inject()(
+                                        @Named("db") val db: Database,
+                                        @Named("profile") val profile: JdbcProfile
+                                      ) extends BaseRepository[UserActivityTable, Long] {
+
+  def table: profile.api.TableQuery[UserActivityTable] = TableQuery[UserActivityTable]
 
   def getId(t: UserActivityTable): profile.api.Rep[Id] = t.id
 
@@ -63,9 +64,12 @@ class UserActivityRepository @Inject()(@Named("db") db: Database) extends Postgr
   def filterByUserIdAction(id: Long): Query[UserActivityTable, UserActivityEntity, Seq] = table filter (_.userId === id)
 }
 
-class UserRepository @Inject()(@Named("db") db: Database) extends PostgresRepository[Users, Long](db) {
+class UserRepository @Inject()(
+                                @Named("db") val db: Database,
+                                @Named("profile") val profile: JdbcProfile
+                              ) extends BaseRepository[Users, Long] {
 
-  val table = TableQuery[Users]
+  def table: profile.api.TableQuery[Users] = TableQuery[Users]
 
   def getId(t: Users): profile.api.Rep[Id] = t.id
 
@@ -84,9 +88,12 @@ class UserRepository @Inject()(@Named("db") db: Database) extends PostgresReposi
   }
 }
 
-class GroupRepository @Inject()(@Named("db") db: Database) extends PostgresRepository[Groups, Long](db) {
+class GroupRepository @Inject()(
+                                 @Named("db") val db: Database,
+                                 @Named("profile") val profile: JdbcProfile
+                               ) extends BaseRepository[Groups, Long] {
 
-  val table = TableQuery[Groups]
+  def table: profile.api.TableQuery[Groups] = TableQuery[Groups]
 
   override def getId(t: Groups): profile.api.Rep[Id] = t.id
 

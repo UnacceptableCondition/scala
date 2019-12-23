@@ -26,5 +26,10 @@ libraryDependencies ++= Seq(
   "com.github.swagger-akka-http" %% "swagger-akka-http" % "2.0.4",
 
   "com.typesafe" % "config" % "1.4.0",
-  "org.flywaydb" % "flyway-core" % "6.1.1"
+  "org.flywaydb" % "flyway-core" % "6.1.1",
+
+  "org.scalatest" %% "scalatest" % "3.1.0" % "test",
+  "org.scalamock" %% "scalamock" % "4.4.0" % "test",
+  "com.h2database" % "h2" % "1.4.192" % "test",
+  "org.mockito" % "mockito-scala_2.12" % "1.10.1"
 )
