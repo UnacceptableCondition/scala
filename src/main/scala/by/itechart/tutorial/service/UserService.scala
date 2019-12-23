@@ -4,49 +4,51 @@ import by.itechart.tutorial.config.Settings
 import by.itechart.tutorial.dao.{RepositoriesManager, User, UserActivityEntity, UserToGroupEntity}
 import com.google.inject.Inject
 import com.google.inject.name.Named
-import slick.jdbc.PostgresProfile.api._
+import by.itechart.tutorial.dao.JdbcProfilesManager.profile.api._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-
-class UserService @Inject()(@Named("db") db: Database, repositoriesManager: RepositoriesManager) {
+class UserService @Inject()(@Named("db") db: Database, val repositoriesManager: RepositoriesManager) {
 
   private val userRep = repositoriesManager.userRepository
   private val userToGroupRep = repositoriesManager.userToGroupRepository
   private val userActivityRep = repositoriesManager.userActivityRepository
 
-
   def getUserById(id: Long): Future[Option[User]] = userRep.findById(id)
 
   def saveUser(user: User): Future[Option[User]] = {
+    val basicQuery = (for {
+      Some(u) <- userRep.insertAction(user)
+      _ <- userActivityRep.insertAction(UserActivityEntity(Option.empty, u.id.get, u.isActive, u.lastUpdateTime))
+    } yield Some(u)).transactionally
+
     val action =
       if (Settings.defaultUserIsActive)
         (for {
-          Some(u) <- userRep.insertAction(user)
+          Some(u) <- basicQuery
           _ <- userToGroupRep.insertAction(UserToGroupEntity(Option.empty, u.id.get, Settings.defaultGroupId))
-          _ <- userActivityRep.insertAction(UserActivityEntity(Option.empty, u.id.get, u.isActive, u.lastUpdateTime))
         } yield Some(u)).transactionally
       else
-        userRep.insertAction(user)
+        basicQuery
 
-    db.run(action)
+    run(action)
   }
 
   def deleteUserById(id: Long): Future[Option[User]] = {
     val query = (for {
       user <- userRep.filterByIdAction(id).result
-      _ <- userRep.deleteAction(id).delete
       _ <- userActivityRep.filterByUserIdAction(id).delete
       _ <- userToGroupRep.filterByUserIdAction(id).delete
+      _ <- userRep.deleteAction(id)
     } yield user.headOption).transactionally
 
-    db.run(query)
+    run(query)
   }
 
   def changeUserActivityStatus(id: Long, status: Boolean): Future[Unit] = {
     val basicQuery = for {
-      activity <- userActivityRep.filterByUserIdAction(id).result.head
+      Some(activity) <- userActivityRep.filterByUserIdAction(id).result.headOption
       _ <- userRep.patchUserActivityAction(id, activity, status)
     } yield activity
 
@@ -61,12 +63,11 @@ class UserService @Inject()(@Named("db") db: Database, repositoriesManager: Repo
         _ <- userToGroupRep.filterByUserIdAction(id).delete
       } yield ()).transactionally
 
-
-    db.run(query)
+    run(query)
   }
 
   def getFullUserInfoById(id: Long): Future[Option[(User, Seq[String])]] = {
-    db.run(userRep.findByIdFullInfoAction(id).result).map({
+    run(userRep.findByIdFullInfoAction(id).result).map({
       case t if t.nonEmpty => Some(t.foldLeft(t.head._1, Seq[String]())((pref, next) => {
         (pref._1, pref._2 :+ next._2.map(_.name).getOrElse(""))
       }))
@@ -82,4 +83,7 @@ class UserService @Inject()(@Named("db") db: Database, repositoriesManager: Repo
 
   def getUsersFirstPage: Future[Seq[User]] = userRep.findFirstPage()
 
+  def run[M](action: DBIO[M]): Future[M] = {
+    db.run(action)
+  }
 }

@@ -1,18 +1,19 @@
 package by.itechart.tutorial.dao
 
+
 import slick.ast.BaseTypedType
+import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.JdbcProfile
-import slick.jdbc.PostgresProfile.api._
 import slick.lifted.AbstractTable
-import slick.sql.FixedSqlAction
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Success
 
-abstract class BaseRepository[T <: AbstractTable[_], I: BaseTypedType](val db: Database) {
+abstract class BaseRepository[T <: AbstractTable[_], I: BaseTypedType] {
   val profile: JdbcProfile
   val defaultPageSize = 20
+  val db: Database
 
   import profile.api._
 
@@ -41,7 +42,7 @@ abstract class BaseRepository[T <: AbstractTable[_], I: BaseTypedType](val db: D
 
   def deleteById(id: Id): Future[Option[T#TableElementType]] = {
     findById(id).andThen({
-      case model: T#TableElementType => db run deleteAction(id).delete andThen {
+      case model: T#TableElementType => db run deleteAction(id) andThen {
         case Success(_) => Some(model)
         case _ => None
       }
@@ -57,15 +58,15 @@ abstract class BaseRepository[T <: AbstractTable[_], I: BaseTypedType](val db: D
 
 
   // region Base Actions
-  def deleteAction(id: Id): profile.DeleteActionExtensionMethods = {
+  def deleteAction(id: Id): DBIOAction[Int, NoStream, Effect.Write] = {
     profile.createDeleteActionExtensionMethods(
       profile.deleteCompiler.run(filterByIdAction(id).toNode).tree, ()
-    )
+    ).delete
   }
 
   def filterByIdAction(id: Id): Query[T, T#TableElementType, Seq] = table filter (getId(_) === id)
 
-  def insertAction(model: T#TableElementType): FixedSqlAction[Some[T#TableElementType], NoStream, Effect.Write] = {
+  def insertAction(model: T#TableElementType): DBIOAction[Some[T#TableElementType], NoStream, Effect.Write] = {
     table returning table.map(getId) into ((m, id) => Some(copyWithId(m, id))) += model
   }
 
