@@ -18,5 +18,11 @@ object Constants {
   val DeleteGroupExceptionMessage: (String, String) = "message" -> DeleteModelExceptionPattern.format("group")
   val GroupNotFoundExceptionMessage: (String, String) = "message" -> ModelNotFoundExceptionPattern.format("group")
 
+  val UserActivityChangeMessage: (String, String) = "message" -> "user active status was changed successfully"
+  val UserActivityChangeExceptionMessage: (String, String) = "message" -> "user active status wasn't change"
+
+  val UserPagesRequestExceptionMessage: (String, String) = "message" ->
+    "Ambiguous request. Don't use \"pages\" query with \"offset\" or \"limit\""
+
   val DateFormat = "EEE, MMM dd, yyyy h:mm a"
 }

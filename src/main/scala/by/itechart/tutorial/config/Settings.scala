@@ -7,7 +7,7 @@ object Settings {
   val flywayConfig: Config = config.getConfig("flyway")
   val dbPropertiesConfig: Config = config.getConfig("database").getConfig("properties")
   val swaggerPropertiesConfig: Config = config.getConfig("swagger")
-
+  val businessPropertiesConfig: Config = config.getConfig("business")
 
   val defaultUserIsActive: Boolean = config.getBoolean("defaultUserIsActive")
   val serverHost: String = config.getString("serverHost")
@@ -21,4 +21,6 @@ object Settings {
   val swaggerApiDocsPath: String = swaggerPropertiesConfig.getString("apiDocsPath")
   val swaggerHost: String = swaggerPropertiesConfig.getString("host")
   val swaggerPOrt: Int = swaggerPropertiesConfig.getInt("port")
+
+  val defaultGroupId: Int = businessPropertiesConfig.getInt("defaultGroupId")
 }

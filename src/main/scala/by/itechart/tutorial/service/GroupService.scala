@@ -1,17 +1,19 @@
 package by.itechart.tutorial.service
 
-import by.itechart.tutorial.dao.{Group, GroupRepository}
+import by.itechart.tutorial.dao.{Group, RepositoriesManager}
 import com.google.inject.Inject
 
 import scala.concurrent.Future
 
-class GroupService @Inject()(groupRepository: GroupRepository) {
+class GroupService @Inject()(repositoriesManager: RepositoriesManager) {
 
-  def getGroupById(id: Long): Future[Option[Group]] = groupRepository.findById(id)
+  private val groupRep = repositoriesManager.groupRepository
 
-  def saveGroup(group: Group): Future[Option[Group]] = groupRepository.insert(group)
+  def getGroupById(id: Long): Future[Option[Group]] = groupRep.findById(id)
 
-  def deleteGroupById(id: Long): Future[Option[Group]] = groupRepository.deleteById(id)
+  def saveGroup(group: Group): Future[Option[Group]] = groupRep.insert(group)
 
-  def updateGroupById(id: Long)(group: Group): Future[Option[Group]] = groupRepository.update(id, group)
+  def deleteGroupById(id: Long): Future[Option[Group]] = groupRep.deleteById(id)
+
+  def updateGroupById(id: Long)(group: Group): Future[Option[Group]] = groupRep.update(id, group)
 }

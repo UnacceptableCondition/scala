@@ -132,9 +132,7 @@ trait SwaggerUserApiDoc {
   @Path("")
   @Operation(
     summary = "Find limited quantity of users with offset",
-    description = "[limited, offset] => Returns limited quantity of users with offset\n" +
-      "[pages] => Returns requested pages\n" +
-      "ATTENTION! Use either [pages] query param or [limited, offset]",
+    description = "[limited, offset] => Returns limited quantity of users with offset\n",
     parameters = Array(
       new Parameter(
         name = "offset", in = ParameterIn.QUERY,
@@ -147,12 +145,6 @@ trait SwaggerUserApiDoc {
         required = false,
         description = "Max quantity fetched users",
         schema = new Schema(implementation = classOf[Int])
-      ),
-      new Parameter(
-        name = "pages", in = ParameterIn.QUERY,
-        required = false,
-        description = "It marks that full user info should be fetched (include m:m and 1:m links)",
-        schema = new Schema(implementation = classOf[String], allowableValues = Array("first", "all"))
       )
     ),
     responses = Array(
@@ -168,6 +160,38 @@ trait SwaggerUserApiDoc {
     )
   )
   def getUsersWitOffsetAndLimit(): Unit = {}
+
+  @PATCH
+  @Path("{id}")
+  @Operation(
+    summary = "Activation or deactivation user's account",
+    parameters = Array(
+      new Parameter(
+        name = "activity", in = ParameterIn.QUERY,
+        required = true,
+        description = "false - to deactivate user's account, true - to active",
+        schema = new Schema(implementation = classOf[Boolean])
+      ),
+      new Parameter(
+        name = "id", in = ParameterIn.PATH,
+        required = true,
+        description = "ID of user which account status should be changed",
+        schema = new Schema(implementation = classOf[Int])
+      )
+    ),
+    responses = Array(
+      new ApiResponse(
+        responseCode = "200",
+        description = "User's activity status was changed",
+        content = Array(new Content(schema = new Schema(implementation = classOf[User])))
+      ),
+      new ApiResponse(
+        responseCode = "404",
+        description = "Requested users wasn't found"
+      )
+    )
+  )
+  def changeUserActivityStatus(): Unit = {}
 
 
 }

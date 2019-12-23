@@ -42,20 +42,11 @@ class UsersApiRouter @Inject()(userService: UserService) extends BaseRouter[User
         }
       },
       get {
-        parameters("offset".as[Int].?, "limit".as[Int].?, "pages".?) { (offset, limit, pages) =>
+        parameters("offset".as[Int].?, "limit".as[Int].?) { (offset, limit) =>
           pathBase() {
-            if (pages.isDefined && (offset.isDefined || limit.isDefined)) {
-              complete("message" -> "Ambiguous request. Don't use \"pages\" query with \"offset\" or \"limit\"")
-            } else {
-              pages match {
-                case Some(v) if v == "first" => completeQuery(userService.getUsersFirstPage)
-                case Some(v) if v == "all" => completeQuery(userService.getAllUsers)
-                case None => completeQuery(
-                  userService.getUsersWitOffsetAndLimit(offset.getOrElse(0))(limit.getOrElse(0))
-                )
-                case _ => complete(InvalidParamsExceptionMessage)
-              }
-            }
+            completeQuery(
+              userService.getUsersWitOffsetAndLimit(offset.getOrElse(0))(limit.getOrElse(0))
+            )
           }
         }
       },
@@ -77,6 +68,17 @@ class UsersApiRouter @Inject()(userService: UserService) extends BaseRouter[User
             extractStrictEntity(3.seconds) {
               entity => updatingHandler(entity, userService.updateUserById(id), PutUserExceptionMessage)
             }
+        }
+      },
+      patch {
+        parameters("activity".as[Boolean]) { status =>
+          pathBaseAndNumber() {
+            id =>
+              onComplete(userService.changeUserActivityStatus(id, status)) {
+                case Success(_) => complete(UserActivityChangeMessage)
+                case _ => complete(UserActivityChangeExceptionMessage)
+              }
+          }
         }
       }
     )

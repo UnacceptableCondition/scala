@@ -2,16 +2,21 @@ package by.itechart.tutorial.dao
 
 import java.sql.{Date, Timestamp}
 
+import by.itechart.tutorial.config.Settings
+import by.itechart.tutorial.util.UtilFunctions.currentTime
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.media.Schema.AccessMode
 import slick.jdbc.PostgresProfile.api._
 
 object Tables {
   lazy val users = TableQuery[Users]
   lazy val groups = TableQuery[Groups]
-  lazy val userGroup = TableQuery[UserGroupTable]
+  lazy val userGroup = TableQuery[UserToGroupTable]
   lazy val userToUser = TableQuery[UserToUserTable]
+  lazy val userActivityTable = TableQuery[UserActivityTable]
 }
 
-class UserGroupTable(tag: Tag) extends Table[UserToGroup](tag, "user_group") {
+class UserToGroupTable(tag: Tag) extends Table[UserToGroupEntity](tag, "user_group") {
   def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
 
   def userId = column[Long]("user_id")
@@ -22,10 +27,10 @@ class UserGroupTable(tag: Tag) extends Table[UserToGroup](tag, "user_group") {
 
   def group = foreignKey("group_fk", groupId, Tables.groups)(_.id)
 
-  def * = (id.?, userId, groupId) <> (UserToGroup.tupled, UserToGroup.unapply)
+  def * = (id.?, userId, groupId) <> (UserToGroupEntity.tupled, UserToGroupEntity.unapply)
 }
 
-class UserToUserTable(tag: Tag) extends Table[UserToUser](tag, "user_group") {
+class UserToUserTable(tag: Tag) extends Table[UserToUserEntity](tag, "user_group") {
   def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
 
   def leftUserId = column[Long]("left_user_id")
@@ -36,7 +41,7 @@ class UserToUserTable(tag: Tag) extends Table[UserToUser](tag, "user_group") {
 
   def group = foreignKey("user_fk", rightUserId, Tables.users)(_.id)
 
-  def * = (id.?, leftUserId, rightUserId) <> (UserToUser.tupled, UserToUser.unapply)
+  def * = (id.?, leftUserId, rightUserId) <> (UserToUserEntity.tupled, UserToUserEntity.unapply)
 }
 
 class Groups(tag: Tag) extends Table[Group](tag, "groups") {
@@ -67,6 +72,52 @@ class Users(tag: Tag) extends Table[User](tag, "users") {
   def * = (id.?, name, surname, email, dateOfBirth, lustUpdateDate, creationDate, isActive) <> (User.tupled, User.unapply)
 }
 
-case class UserToGroup(id: Option[Long], userId: Long, groupId: Long)
+class UserActivityTable(tag: Tag) extends Table[UserActivityEntity](tag, "user_activity") {
+  def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
 
-case class UserToUser(id: Option[Long], leftUserId: Long, rightUserId: Long)
+  def userId = column[Long]("user_id")
+
+  def isActive = column[Boolean]("is_active")
+
+  def lastUpdate = column[Timestamp]("last_update_date")
+
+  def * = (id.?, userId, isActive, lastUpdate) <> (UserActivityEntity.tupled, UserActivityEntity.unapply)
+}
+
+case class UserToGroupEntity(id: Option[Long], userId: Long, groupId: Long)
+
+case class UserToUserEntity(id: Option[Long], leftUserId: Long, rightUserId: Long)
+
+case class UserActivityEntity(
+                               id: Option[Long] = Option.empty,
+                               userId: Long,
+                               isActive: Boolean,
+                               lastUpdate: Timestamp
+                             )
+
+@Schema(
+  name = "UserModel",
+  description = "Model for user representation",
+  requiredProperties = Array("name", "surname", "email", "dateOfBirth")
+)
+case class User(
+                 @Schema(accessMode = AccessMode.READ_ONLY) id: Option[Long] = Option.empty,
+                 name: String,
+                 surname: String,
+                 email: String,
+                 dateOfBirth: Date,
+                 @Schema(accessMode = AccessMode.READ_ONLY) creationDate: Timestamp = currentTime,
+                 @Schema(accessMode = AccessMode.READ_ONLY) lastUpdateTime: Timestamp = currentTime,
+                 @Schema(accessMode = AccessMode.READ_ONLY) isActive: Boolean = Settings.defaultUserIsActive
+               )
+
+@Schema(
+  name = "GroupModel",
+  description = "Model for group representation",
+  requiredProperties = Array("name")
+)
+final case class Group(
+                        @Schema(accessMode = AccessMode.READ_ONLY) id: Option[Long] = Option.empty,
+                        name: String
+                      )
+

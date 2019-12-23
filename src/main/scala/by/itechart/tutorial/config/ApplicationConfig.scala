@@ -9,10 +9,9 @@ import slick.jdbc.PostgresProfile.api.Database
 
 class ApplicationConfig extends AbstractModule with ScalaModule with MigrationConfig {
 
+  val database = Database.forConfig("database")
+
   @Provides
   @Named("db")
-  def provideDataSourceParams(): PostgresProfile.backend.DatabaseDef = {
-    Database.forConfig("database")
-  }
-
+  def provideDataSourceParams(): PostgresProfile.backend.DatabaseDef = database
 }

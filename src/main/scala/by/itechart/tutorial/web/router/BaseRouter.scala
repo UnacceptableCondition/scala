@@ -1,26 +1,22 @@
 package by.itechart.tutorial.web.router
 
-import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.{HttpEntity, StatusCodes}
 import akka.http.scaladsl.server.Directives.{complete, onSuccess, path, pathPrefix, _}
 import akka.http.scaladsl.server.{Directive, Route}
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import by.itechart.tutorial.util.UtilFunctions.StringToDate
+import by.itechart.tutorial.util.JsonConversionsProvider
 import by.itechart.tutorial.util.const.Constants.DefaultExceptionMessage
 import com.typesafe.scalalogging.Logger
-import org.json4s.native.Serialization.{read, write}
-import org.json4s.{DefaultFormats, Formats}
+import org.json4s.native.Serialization.read
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-abstract class BaseRouter[A: Manifest] {
+abstract class BaseRouter[A: Manifest] extends JsonConversionsProvider[A] {
 
   import by.itechart.tutorial.Application._
 
   val logger: Logger = Logger(classOf[BaseRouter[A]])
-
-  implicit val formats: Formats = DefaultFormats + StringToDate
 
   type Result = Future[Option[A]]
 
@@ -41,19 +37,6 @@ abstract class BaseRouter[A: Manifest] {
 
   def updatingHandler(entity: HttpEntity.Strict, unmarshalCallback: A => Result, exceptionMessage: (String, String)): Route =
     completeQueryWithUnmarshal(unmarshal(entity, unmarshalCallback), exceptionMessage)
-
-  // endregion
-
-  // region Conversions
-  implicit def optionModelConversion(x: Option[A]): ToResponseMarshallable = write(x)
-
-  implicit def modelConversion(x: A): ToResponseMarshallable = write(x)
-
-  implicit def exceptionMessageConversion(x: (String, String)): ToResponseMarshallable = write(x)
-
-  implicit def exceptionMessageConversionWithCode(x: (StatusCodes.ClientError, (String, String))): ToResponseMarshallable =
-    x._1 -> write(x._2)
-
 
   // endregion
 
